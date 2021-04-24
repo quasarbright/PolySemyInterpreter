@@ -1,7 +1,7 @@
 module Interpreter where
 
 import Polysemy
-    ( Member, Sem, reinterpret2H, makeSem, pureT, runT, raise, transform, subsume )
+    ( Member, Sem, makeSem, pureT, runT, raise, Members, interpretH, raiseUnder2, run )
 import Data.Map(Map)
 import qualified Data.Map as Map
 import Polysemy.Reader ( ask, local, Reader, runReader )
@@ -40,8 +40,8 @@ data Interpreter m a where
 
 makeSem ''Interpreter
 
-reinterpretInterpreter :: Sem (Interpreter ': r) a -> Sem (Reader Env ': Error RuntimeError ': r) a
-reinterpretInterpreter = reinterpret2H $ \case
+interpreterToReaderError :: Members '[Reader Env, Error RuntimeError] r => Sem (Interpreter ': r) a -> Sem r a
+interpreterToReaderError = interpretH $ \case
     ThrowError err -> throw err
     LookupVar x -> do
         env <- ask
@@ -49,20 +49,21 @@ reinterpretInterpreter = reinterpret2H $ \case
             Nothing -> throw $ UnboundVar x
             Just v -> pureT v
     WithVar x v m -> do
-        m' <- runT m <&> reinterpretInterpreter <&> subsume <&> subsume
+        m' <- runT m <&> interpreterToReaderError
         raise $ local (Map.insert x v) m'
     GetEnv -> do
         env <- ask
         pureT env
     WithEnv env m -> do
-        m' <- runT m <&> reinterpretInterpreter <&> subsume <&> subsume
+        m' <- runT m <&> interpreterToReaderError
         raise $ local (const env) m'
 
 runInterpreter :: Env -> Sem (Interpreter ': r) a -> Sem r (Either RuntimeError a)
-runInterpreter env = 
-    reinterpretInterpreter
-    >>> runReader env
-    >>> runError
+runInterpreter env =
+    raiseUnder2 -- puts the reader and error effects directly under the interpreter effect
+    >>> interpreterToReaderError -- interpret the interpreter effect using that reader and error
+    >>> runReader env -- run the reader
+    >>> runError -- run the error
 
 evalExpr :: Member Interpreter r => Expr -> Sem r Value
 evalExpr = \case
@@ -84,3 +85,6 @@ evalExpr = \case
                 vx <- evalExpr x
                 evalExpr body & withEnv env & withVar argname vx
             _ -> throwError (TypeError "applied non-function")
+
+interpretExpr :: Expr -> Either RuntimeError Value
+interpretExpr e = evalExpr e & runInterpreter mempty & run
