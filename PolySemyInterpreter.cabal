@@ -1,0 +1,91 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: a78c23924c61b25e5a8de2825b15a65a28a6e987ac1ba9e3a2eab038ef6806a6
+
+name:           PolySemyInterpreter
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/quasarbright/PolySemyInterpreter#readme>
+homepage:       https://github.com/quasarbright/PolySemyInterpreter#readme
+bug-reports:    https://github.com/quasarbright/PolySemyInterpreter/issues
+author:         Mike Delmonaco
+maintainer:     mdelmonacochs@gmail.com
+copyright:      Mike Delmonaco
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/quasarbright/PolySemyInterpreter
+
+library
+  exposed-modules:
+      AST
+      Interpreter
+      Lib
+  other-modules:
+      Paths_PolySemyInterpreter
+  hs-source-dirs:
+      src
+  default-extensions: LambdaCase RecordWildCards GeneralizedNewtypeDeriving TupleSections MonadComprehensions MultiWayIf TemplateHaskell BlockArguments GADTs FlexibleContexts TypeOperators DataKinds PolyKinds TypeApplications RankNTypes ScopedTypeVariables TypeFamilies
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , extra
+    , megaparsec
+    , mtl
+    , polysemy
+    , polysemy-plugin
+    , transformers
+  default-language: Haskell2010
+
+executable PolySemyInterpreter-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_PolySemyInterpreter
+  hs-source-dirs:
+      app
+  default-extensions: LambdaCase RecordWildCards GeneralizedNewtypeDeriving TupleSections MonadComprehensions MultiWayIf TemplateHaskell BlockArguments GADTs FlexibleContexts TypeOperators DataKinds PolyKinds TypeApplications RankNTypes ScopedTypeVariables TypeFamilies
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -w -Wall -fplugin=Polysemy.Plugin
+  build-depends:
+      PolySemyInterpreter
+    , base >=4.7 && <5
+    , containers
+    , extra
+    , megaparsec
+    , mtl
+    , polysemy
+    , polysemy-plugin
+    , transformers
+  default-language: Haskell2010
+
+test-suite PolySemyInterpreter-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_PolySemyInterpreter
+  hs-source-dirs:
+      test
+  default-extensions: LambdaCase RecordWildCards GeneralizedNewtypeDeriving TupleSections MonadComprehensions MultiWayIf TemplateHaskell BlockArguments GADTs FlexibleContexts TypeOperators DataKinds PolyKinds TypeApplications RankNTypes ScopedTypeVariables TypeFamilies
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -w -Wall
+  build-depends:
+      HUnit
+    , PolySemyInterpreter
+    , QuickCheck
+    , base >=4.7 && <5
+    , containers
+    , extra
+    , hspec
+    , megaparsec
+    , mtl
+    , polysemy
+    , polysemy-plugin
+    , transformers
+  default-language: Haskell2010
